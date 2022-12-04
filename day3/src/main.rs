@@ -1,4 +1,4 @@
-use std::{collections::BTreeSet, fs::File, io::Read};
+use std::{fs::File, io::Read};
 
 fn priority(c: char) -> i32 {
     match c {
@@ -8,18 +8,21 @@ fn priority(c: char) -> i32 {
     }
 }
 
+fn to_bitmask(x: &str) -> u64 {
+    let mut mask: u64 = 0;
+    for ch in x.chars() {
+        mask |= 1u64 << (ch as u8 - b'A');
+    }
+    mask
+}
+
 fn day3a(input: &str) {
     let mut res = 0;
 
     for line in input.lines() {
         let (left, right) = line.split_at(line.len() / 2);
-        let a: BTreeSet<_> = left.chars().collect();
-        let b: BTreeSet<_> = right.chars().collect();
-
-        let c: Vec<_> = a.intersection(&b).collect();
-        if let Some(x) = c.first() {
-            res += priority(**x);
-        }
+        let mask = to_bitmask(left) & to_bitmask(right);
+        res += priority((mask.trailing_zeros() as u8 + b'A') as char);
     }
 
     println!("{}", res);
@@ -30,18 +33,10 @@ fn day3b(input: &str) {
 
     let lines: Vec<_> = input.lines().collect();
 
-    for i in (0..lines.len()).step_by(3) {
-        if let (Some(&a), Some(&b), Some(&c)) = (lines.get(i), lines.get(i + 1), lines.get(i + 2)) {
-            let x: BTreeSet<_> = a.chars().collect();
-            let y: BTreeSet<_> = b.chars().collect();
-            let z: BTreeSet<_> = c.chars().collect();
-
-            let xy: BTreeSet<_> = x.intersection(&y).cloned().collect();
-            let xyz: Vec<_> = xy.intersection(&z).cloned().collect();
-
-            if let Some(elem) = xyz.first() {
-                res += priority(*elem);
-            }
+    for chunk in lines.chunks_exact(3) {
+        if let [a, b, c] = chunk[..] {
+            let mask = to_bitmask(a) & to_bitmask(b) & to_bitmask(c);
+            res += priority((mask.trailing_zeros() as u8 + b'A') as char);
         }
     }
 
