@@ -20,7 +20,9 @@ impl Dir {
         self.files.entry(name.to_string()).or_insert(size);
     }
     fn cd(&mut self, name: &str) -> &mut Dir {
-        self.children.entry(name.to_string()).or_insert(Dir::new())
+        self.children
+            .entry(name.to_string())
+            .or_insert_with(Dir::new)
     }
     fn size(&mut self) -> u64 {
         match self.size {
@@ -114,9 +116,7 @@ fn day7(input: &str) {
 }
 
 fn main() {
-    let args: Vec<_> = env::args().collect();
-
-    let input_name = if args.contains(&"--small".to_string()) {
+    let input_name = if env::args().any(|a| a == "--small") {
         "input.small.txt"
     } else {
         "input.txt"
