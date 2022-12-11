@@ -5,8 +5,7 @@ use std::fs;
 fn parse_ints(line: &str) -> Vec<i64> {
     line.split(' ')
         .map(|x| x.parse::<i64>())
-        .filter(|x| x.is_ok())
-        .map(|x| x.unwrap())
+        .filter_map(|x| x.ok())
         .collect()
 }
 
@@ -42,11 +41,11 @@ impl Operation {
     fn exec(&self, old: i64) -> i64 {
         let a = match self.a {
             Operand::Const(x) => x,
-            Operand::Old => old
+            Operand::Old => old,
         };
         let b = match self.b {
             Operand::Const(x) => x,
-            Operand::Old => old
+            Operand::Old => old,
         };
 
         self.op.exec(a, b)
@@ -69,7 +68,7 @@ impl Monkey {
             operation: Operation {
                 a: Operand::Old,
                 op: Operator::Add,
-                b: Operand::Old
+                b: Operand::Old,
             },
             test: 0,
             throw_true: 0,
@@ -110,7 +109,7 @@ fn parse_input(input: &str) -> Vec<Monkey> {
     let lines = input.lines().collect::<Vec<_>>();
 
     for i in (0..lines.len()).step_by(7) {
-        res.push(Monkey::parse(&lines[i..i+6]));
+        res.push(Monkey::parse(&lines[i..i + 6]));
     }
 
     res
@@ -118,7 +117,7 @@ fn parse_input(input: &str) -> Vec<Monkey> {
 
 fn day11a(input: &str) {
     let mut monkeys = parse_input(input);
-    let mut pending = HashMap::<usize,VecDeque<i64>>::new();
+    let mut pending = HashMap::<usize, VecDeque<i64>>::new();
     let mut counter = vec![0; monkeys.len()];
 
     for _ in 0..20 {
@@ -151,7 +150,7 @@ fn day11a(input: &str) {
 
 fn day11b(input: &str) {
     let mut monkeys = parse_input(input);
-    let mut pending = HashMap::<usize,VecDeque<i64>>::new();
+    let mut pending = HashMap::<usize, VecDeque<i64>>::new();
     let mut counter = vec![0i64; monkeys.len()];
 
     let modulo: i64 = monkeys.iter().map(|m| m.test).product();
