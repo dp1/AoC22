@@ -1,0 +1,70 @@
+name: Rust
+
+on: [push, pull_request]
+
+jobs:
+  clippy:
+    name: Test and Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        id: install-rust
+        with:
+          toolchain: stable
+          components: clippy
+          override: true
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-test-${{ steps.install-rust.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: cargo test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --color=always --all --no-fail-fast
+        env:
+          RUST_BACKTRACE: 1
+
+      - name: cargo clippy
+        uses: actions-rs/clippy-check@v1
+        if: ${{ github.event_name != 'pull_request' }}
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-targets --all-features --tests --all -- -D warnings
+
+      - name: cargo clippy (for pull requests)
+        uses: actions-rs/cargo@v1
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          command: clippy
+          args: --color=always --all-targets --all-features --tests --all -- -D warnings
+
+  rustfmt:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        id: install-rust
+        with:
+          toolchain: stable
+          components: clippy
+          override: true
+
+      - name: cargo fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
